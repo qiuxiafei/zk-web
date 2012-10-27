@@ -8,6 +8,8 @@
         [hiccup.page]
         [hiccup element core]))
 
+;; layout
+
 (defpartial header []
   [:div.page-header.span9
    [:h1 (link-to "/" "ZK-Web")
@@ -17,17 +19,19 @@
   [:div])
 
 (defpartial layout [& content]
-            (html5
-              [:head
-               [:title "zk-web"]
-               (include-css "/css/bootstrap.css")
-               (include-css "/css/bootstrap-responsive.css")
-               (include-js "/js/bootstrap.js")]
-              [:body
-               [:div.container
-                (header)
-                content
-                (footer)]]))
+  (html5
+   [:head
+    [:title "zk-web"]
+    (include-css "/css/bootstrap.css")
+    (include-css "/css/bootstrap-responsive.css")
+    (include-js "/js/bootstrap.js")]
+   [:body
+    [:div.container
+     (header)
+     content
+     (footer)]]))
+
+;; util functions
 
 (defn node-link
   "Return http link to node page"
@@ -52,14 +56,17 @@
         node-seq (cons (session/get :addr) node-seq)]
     [node-seq link-seq]))
 
+;; page elements
+
 (defpartial node-stat [stat]
   [:div.span3
    [:table.table-striped.table-bordered.table
     [:tr [:h3 "Node Stat"]]
-   (map (fn [kv]
-          [:tr [:td (first kv)]
-           [:td (last kv)]])
-        stat)]])
+    (map (fn [kv]
+           [:tr
+            [:td (first kv)]
+            [:td (last kv)]])
+         stat)]])
 
 (defpartial nav-bar [path]
   (let [[node-seq link-seq] (nodes-parents-and-link path)]
@@ -74,25 +81,34 @@
     [:div.span3
      [:ul.nav.nav-tabs.nav-stacked
       [:h3 "Children"]
-      (map (fn [s] [:li (node-link (str parent s) s)]) children)
-      ;[:li.btn.btn-primary "Add Child"]
+      (if (empty? children)
+        [:div.alert "No children"]
+        (map (fn [s] [:li (node-link (str parent s) s)]) children))
+
       ]]))
 
 (defpartial node-data [data]
   [:div.span3
    [:h3 "Node Data"]
-   [:div.well
-    [:p {:style "word-wrap:break-word;"}
-     (apply str (map char data))]]])
+   (if (nil? data)
+     [:div.alert.alert-error "God, zookeeper returns NULL!"]
+     [:div.well
+      [:p {:style "word-break:break-all;"}
+       (zk/bytes->str data)]]
+     )])
+
+;; pages
 
 (defpage "/node" {:keys [path]}
   (let [path (normalize-path path)
         cli (session/get :cli)]
-    (layout
-     (nav-bar path)
-     (node-children path (zk/ls cli path))
-     (node-stat (zk/stat cli path))
-     (node-data (zk/get cli path)))))
+    (if (nil? cli)
+      (resp/redirect "/")
+      (layout
+       (nav-bar path)
+       (node-children path (zk/ls cli path))
+       (node-stat (zk/stat cli path))
+       (node-data (zk/get cli path))))))
 
 (defpage "/" []
   (let [cookie (cookies/get :history)
