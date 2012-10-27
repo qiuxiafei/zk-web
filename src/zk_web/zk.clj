@@ -1,7 +1,8 @@
 (ns zk-web.zk
   (:import [com.netflix.curator.retry RetryNTimes]
            [com.netflix.curator.framework CuratorFramework CuratorFrameworkFactory]
-           [java.nio.charset Charset]))
+           [java.nio.charset Charset])
+  (:refer-clojure :exclude [set get]))
 
 (defn mk-zk-cli
   "Create a zk client using addr as connecting string"
