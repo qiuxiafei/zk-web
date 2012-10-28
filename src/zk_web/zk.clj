@@ -52,6 +52,8 @@
   [cli path]
   (-> cli (.getData) (.forPath path)))
 
+;; util functions
+
 (defn bytes->str
   "Convert byte[] to String"
   [bytes]

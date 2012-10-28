@@ -8,12 +8,42 @@
         [hiccup.page]
         [hiccup element core]))
 
+;; util functions
+
+(defn node-link
+  "Return http link to node page"
+  [node text]
+  [:a {:href (str "/node?path=" node)} text])
+
+(defn normalize-path
+  "fix the path to normalized form"
+  [path]
+  (let [path (if (empty? path) "/" path)
+        path (if (and (.endsWith path "/") (> (count path) 1))
+               (apply str (drop-last path))
+               path)]
+    path))
+
+(defn nodes-parents-and-link
+  "Return name parents and there links"
+  [path]
+  (let [node-seq (rest (str/split path #"/"))
+        link-seq (reduce #(conj %1 (str (last %1) %2 "/"))
+                         ["/"] node-seq)
+        node-seq (cons (session/get :addr) node-seq)]
+    [node-seq link-seq]))
+
+(defn space
+  "Retrn a number of html space"
+  [n]
+  (apply str (repeat n "&nbsp;")))
+
 ;; layout
 
 (defpartial header []
   [:div.page-header.span9
    [:h1 (link-to "/" "ZK-Web")
-    [:small "&nbsp;&nbsp;&nbsp;&nbsp;Make zookeeper simpler."]]])
+    [:small (space 4) "Make zookeeper simpler."]]])
 
 (defpartial footer []
   [:div])
@@ -30,31 +60,6 @@
      (header)
      content
      (footer)]]))
-
-;; util functions
-
-(defn node-link
-  "Return http link to node page"
-  [node text]
-  [:a {:href (str "/node?path=" node)} text])
-
-(defn normalize-path
-  "fix the path to normalized form"
-  [path]
-  (let [path (if (empty? path) "/" path)
-        path (if  (and (.endsWith path "/") (> (count path) 1))
-               (apply str (drop-last path))
-               path)]
-    path))
-
-(defn nodes-parents-and-link
-  "Return name parents and there links"
-  [path]
-  (let [node-seq (rest (str/split path #"/"))
-        link-seq (reduce #(conj %1 (str (last %1) %2 "/"))
-                         ["/"] node-seq)
-        node-seq (cons (session/get :addr) node-seq)]
-    [node-seq link-seq]))
 
 ;; page elements
 
@@ -80,15 +85,15 @@
                  (str parent "/"))]
     [:div.span3
      [:ul.nav.nav-tabs.nav-stacked
+      [:span.badge.pull-right (count children)]
       [:h3 "Children"]
       (if (empty? children)
         [:div.alert "No children"]
-        (map (fn [s] [:li (node-link (str parent s) s)]) children))
-
-      ]]))
+        (map (fn [s] [:li (node-link (str parent s) s)]) children))]]))
 
 (defpartial node-data [data]
   [:div.span3
+   [:span.badge.pull-right (count data) " bytes"]
    [:h3 "Node Data"]
    (if (nil? data)
      [:div.alert.alert-error "God, zookeeper returns NULL!"]
@@ -114,18 +119,18 @@
   (let [cookie (cookies/get :history)
         cookie (if (nil? cookie) "[]" cookie)]
     (layout
-     (map
-      #(link-to (str "/init?addr=" %) [:div.well.span6 [:h3 %]])
-      (read-string cookie))
+     (map #(link-to (str "init?addr=" %) [:div.well.span6 [:h3 %]])
+          (read-string cookie))
      [:form.well.span6 {:action "/init" :method "get"}
       [:input.span4. {:type "text" :name "addr" :placeholder "Connect String Here"}]
       [:button.btn.btn-primary {:type "submit"} "Go"]])))
 
 (defpage [:get "/init"] {:keys [addr]}
-  (let [cookie-str (cookies/get :history)
+  (let [addr (str/trim addr)
+        cookie-str (cookies/get :history)
         cookie-str (if (nil? cookie-str) "[]" cookie-str)
         cookie (read-string cookie-str)
         _ (cookies/put! :history  (str (vec (take 3 (cons addr cookie)))))
-        _ (session/put! :cli (zk/mk-zk-cli addr))
-        _ (session/put! :addr addr)]
+        _ (session/put! :addr addr)
+        _ (session/put! :cli (zk/mk-zk-cli addr))]
     (resp/redirect "/node")))

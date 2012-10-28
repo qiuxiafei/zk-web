@@ -25,10 +25,10 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 ## TODO
 * User Access Control - Let administrator add/delete/edit nodes, and others has read-only permission.
 * Data Format - Format json, xml and so on.
+* Make it more configarable.
 
 ## License
 
 Copyright (C) 2011 FIXME
 
 Distributed under the Eclipse Public License, the same as Clojure.
-
