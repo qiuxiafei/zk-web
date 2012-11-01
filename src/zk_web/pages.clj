@@ -1,12 +1,13 @@
 (ns zk-web.pages
   (:require [zk-web.zk :as zk]
+            [zk-web.conf :as conf]
             [noir.cookies :as cookies]
             [noir.session :as session]
             [noir.response :as resp]
+            [noir.request :as req]
             [clojure.string :as str])
   (:use [noir.core]
-        [hiccup.page]
-        [hiccup element core]))
+        [hiccup page form element core]))
 
 ;; util functions
 
@@ -38,12 +39,30 @@
   [n]
   (apply str (repeat n "&nbsp;")))
 
+(defn referer
+  "Get the referer from http header"
+  []
+  (let [header (:headers (req/ring-request) {"referer" "/"})
+        referer (header "referer")]
+    referer))
+
+(def all-users (:users (conf/load-conf)))
+
 ;; layout
 
 (defpartial header []
-  [:div.page-header.span9
-   [:h1 (link-to "/" "ZK-Web")
-    [:small (space 4) "Make zookeeper simpler."]]])
+  [:div.span9.page-header
+   [:div.row
+    [:div.span6
+     [:h1 (link-to "/" "ZK-Web")
+      [:small (space 4) "Make zookeeper simpler."]]]
+    [:div.span2
+     (if-let [user (session/get :user)]
+       [:div
+        (link-to "/logout" [:span.badge.badge-error.pull-right "Logout"])
+        [:span.badge.badge-info.pull-right user]]
+       (link-to "/login" [:span.badge.badge-success.pull-right "Login"]))]]
+   ])
 
 (defpartial footer []
   [:div])
@@ -93,7 +112,7 @@
 
 (defpartial node-data [data]
   [:div.span3
-   [:span.badge.pull-right (count data) " bytes"]
+   [:span.badge.pull-right (count data) " byte(s)"]
    [:h3 "Node Data"]
    (if (nil? data)
      [:div.alert.alert-error "God, zookeeper returns NULL!"]
@@ -134,3 +153,36 @@
         _ (session/put! :addr addr)
         _ (session/put! :cli (zk/mk-zk-cli addr))]
     (resp/redirect "/node")))
+
+
+(defpage [:get "/login"] {:keys [msg target]}
+  (layout
+   [:div.span3.offset3
+    [:div.row.form-actions
+     (when-not (nil? msg) [:div.alert.alert-error [:h4 msg]])
+     (form-to [:post "/login"]
+              (label "user" "User Name")
+              [:input.span3 {:type "text" :name "user"}]
+              (label "pass" "Pass Word")
+              [:input.span3 {:type "password" :name "pass"}]
+              [:input.span3 {:type "hidden" :name "target" :value (if (nil? target) (referer) target)}]
+              [:button.btn.btn-primary {:type "submit"} "Login"])]]))
+
+(defpage [:post "/login"] {:keys [user pass target]}
+  (cond
+   (= (all-users user) pass) (do
+                               (session/put! :user user)
+                               (resp/redirect target))
+   :else (render [:get "/login"]
+                 {:msg "Incorrect password." :target target})))
+
+(defpage "/logout" []
+  (do
+    (session/put! :user nil)
+    (resp/redirect (referer))))
+
+(defpage "/css" []
+  (layout
+   [:div.row
+    [:div.span6 "level 222"]
+    [:div.span6 "level 222"]]))

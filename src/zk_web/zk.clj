@@ -4,7 +4,7 @@
            [java.nio.charset Charset])
   (:refer-clojure :exclude [set get]))
 
-(defn mk-zk-cli
+(defn- mk-zk-cli-inner
   "Create a zk client using addr as connecting string"
   [ addr ]
   (let [cli (-> (CuratorFrameworkFactory/builder)
@@ -13,6 +13,9 @@
                 (.build))
         _ (.start cli)]
     cli))
+
+;; memorize this function to save net connection
+(def mk-zk-cli (memoize mk-zk-cli-inner))
 
 (defn create
   "Create a node in zk with a client"

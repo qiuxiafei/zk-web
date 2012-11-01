@@ -1,11 +1,13 @@
 (ns zk-web.server
-  (:require [noir.server :as server]))
+  (:require [noir.server :as server]
+            [zk-web.conf :as conf]
+            ))
 
 (server/load-views-ns 'zk-web.pages)
 
 
 (defn -main [& m]
   (let [mode (keyword (or (first m) :dev))
-        port (Integer. (get (System/getenv) "PORT" "8080"))]
+        port (:server-port (conf/load-conf))]
     (server/start port {:mode mode
                         :ns 'zk-web})))
