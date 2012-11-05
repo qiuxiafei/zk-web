@@ -1,7 +1,6 @@
 (ns zk-web.zk
   (:import [com.netflix.curator.retry RetryNTimes]
-           [com.netflix.curator.framework CuratorFramework CuratorFrameworkFactory]
-           [java.nio.charset Charset])
+           [com.netflix.curator.framework CuratorFramework CuratorFrameworkFactory])
   (:refer-clojure :exclude [set get]))
 
 (defn- mk-zk-cli-inner
@@ -54,10 +53,3 @@
   "Get data from a node"
   [cli path]
   (-> cli (.getData) (.forPath path)))
-
-;; util functions
-
-(defn bytes->str
-  "Convert byte[] to String"
-  [bytes]
-  (String. bytes (Charset/forName "UTF-8")))

@@ -7,6 +7,7 @@
             [noir.request :as req]
             [clojure.string :as str])
   (:use [noir.core]
+        [zk-web.util]
         [hiccup page form element core]))
 
 ;; util functions
@@ -16,15 +17,6 @@
   [node text]
   [:a {:href (str "/node?path=" node)} text])
 
-(defn normalize-path
-  "fix the path to normalized form"
-  [path]
-  (let [path (if (empty? path) "/" path)
-        path (if (and (.endsWith path "/") (> (count path) 1))
-               (apply str (drop-last path))
-               path)]
-    path))
-
 (defn nodes-parents-and-link
   "Return name parents and there links"
   [path]
@@ -33,11 +25,6 @@
                          ["/"] node-seq)
         node-seq (cons (session/get :addr) node-seq)]
     [node-seq link-seq]))
-
-(defn space
-  "Retrn a number of html space"
-  [n]
-  (apply str (repeat n "&nbsp;")))
 
 (defn referer
   "Get the referer from http header"
@@ -110,7 +97,7 @@
         [:div.alert "No children"]
         (map (fn [s] [:li (node-link (str parent s) s)]) children))]]))
 
-(defpartial node-data [data]
+(defpartial node-data [path data]
   [:div.span3
    [:span.badge.pull-right (count data) " byte(s)"]
    [:h3 "Node Data"]
@@ -118,8 +105,9 @@
      [:div.alert.alert-error "God, zookeeper returns NULL!"]
      [:div.well
       [:p {:style "word-break:break-all;"}
-       (zk/bytes->str data)]]
-     )])
+       (bytes->str data)]])
+   (when-admin
+    (link-to (str "/edit?path=" path) [:button.btn.btn-danger "Edit"]))])
 
 ;; pages
 
@@ -132,7 +120,7 @@
        (nav-bar path)
        (node-children path (zk/ls cli path))
        (node-stat (zk/stat cli path))
-       (node-data (zk/get cli path))))))
+       (node-data path (zk/get cli path))))))
 
 (defpage "/" []
   (let [cookie (cookies/get :history)
@@ -141,8 +129,13 @@
      (map #(link-to (str "init?addr=" %) [:div.well.span6 [:h3 %]])
           (read-string cookie))
      [:form.well.span6 {:action "/init" :method "get"}
-      [:input.span4. {:type "text" :name "addr" :placeholder "Connect String Here"}]
-      [:button.btn.btn-primary {:type "submit"} "Go"]])))
+      [:div.span6
+       [:div.row
+        [:div.span4
+         [:input.span4. {:type "text" :name "addr" :placeholder "Connect String Here"}]]
+        [:div.span2
+         [:button.btn.btn-primary {:type "submit"} "Go"]]]]]
+     )))
 
 (defpage [:get "/init"] {:keys [addr]}
   (let [addr (str/trim addr)
@@ -158,7 +151,7 @@
 (defpage [:get "/login"] {:keys [msg target]}
   (layout
    [:div.span3.offset3
-    [:div.row.form-actions
+    [:div.row
      (when-not (nil? msg) [:div.alert.alert-error [:h4 msg]])
      (form-to [:post "/login"]
               (label "user" "User Name")
@@ -166,7 +159,8 @@
               (label "pass" "Pass Word")
               [:input.span3 {:type "password" :name "pass"}]
               [:input.span3 {:type "hidden" :name "target" :value (if (nil? target) (referer) target)}]
-              [:button.btn.btn-primary {:type "submit"} "Login"])]]))
+              [:div.form-actions
+               [:button.btn.btn-primary {:type "submit"} "Login"]])]]))
 
 (defpage [:post "/login"] {:keys [user pass target]}
   (cond
@@ -180,6 +174,28 @@
   (do
     (session/put! :user nil)
     (resp/redirect (referer))))
+
+(defpage [:get "/edit"] {:keys [path]}
+  (layout
+   (let [cli (session/get :cli)
+         data (zk/get cli path)
+         data (bytes->str data)]
+     [:h3 data path]
+     [:div.row.span5.offset2
+      [:div
+       (form-to [:post "/edit"]
+                [:div.span5
+                 [:textarea.input-xlarge.span5 {:type "text" :name "data" :rows 6} data]
+                 [:input.span3 {:type "hidden" :name "path" :value path}]]
+                [:div.span5.form-actions
+                 [:button.btn.btn-danger {:type "submit"} "Save"]
+                 (space 1)
+                 [:button.btn.btn-success "Cancel"]])]])))
+
+(defpage [:post "/edit"] {:keys [path data]}
+  (when-admin
+   (zk/set (session/get :cli) path (.getBytes data)))
+  (resp/redirect (str "/node?path=" path)))
 
 (defpage "/css" []
   (layout
