@@ -23,9 +23,10 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 * Remember last 3 zookeepers you visit in cookie.
 
 ## TODO
-* User Access Control - Let administrator add/delete/edit nodes, and others has read-only permission.
+* User Access Control - Let administrator add/delete/edit nodes, and guest has read-only permission.
 * Data Format - Format json, xml and so on.
 * Make it more configarable.
+* Ability to access several zk server in one http session
 
 ## License
 

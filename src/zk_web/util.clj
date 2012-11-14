@@ -16,6 +16,11 @@
                path)]
     path))
 
+(defn child-path
+  "get child path by parent and child name"
+  [parent child]
+  (str parent (when-not (.endsWith parent "/") "/") child))
+
 (defn space
   "Retern a number of html space"
   [n]

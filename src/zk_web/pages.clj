@@ -38,39 +38,78 @@
 ;; layout
 
 (defpartial header []
-  [:div.span9.page-header
+  [:div.span12.page-header
    [:div.row
-    [:div.span6
+    [:div.span10
      [:h1 (link-to "/" "ZK-Web")
-      [:small (space 4) "Make zookeeper simpler."]]]
+      [:small (space 4) "Make zookeeper simpler"]]]
     [:div.span2
      (if-let [user (session/get :user)]
        [:div
-        (link-to "/logout" [:span.badge.badge-error.pull-right "Logout"])
-        [:span.badge.badge-info.pull-right user]]
-       (link-to "/login" [:span.badge.badge-success.pull-right "Login"]))]]
+        [:span.badge.badge-info user]
+        (link-to "/logout" [:span.badge.badge-error "Logout"])]
+       [:div
+        [:span.badge "Guest"]
+        (link-to "/login" [:span.badge.badge-success "Login"])])]]
    ])
 
 (defpartial footer []
   [:div])
 
+(defpartial admin-tool [path]
+  [:div.navbar.navbar-fixed-bottom
+   [:div.navbar-inner
+    [:div.container
+     [:a.brand {:href "#"} "Admin Tools"]
+     [:ul.nav
+      (interleave
+       [[:li [:a {:data-toggle "modal" :href "#createModal"} "Create"]]
+        [:li [:a {:data-toggle "modal" :href "#editModal"} "Edit"]]
+        [:li [:a {:data-toggle "modal" :href "#deleteModal"} "Delete"]]
+        [:li (link-to (str "/rmr?path=" path)  "RMR")]]
+       (repeat [:li.divider-vertical])
+       )]]
+    ]])
+
 (defpartial layout [& content]
   (html5
    [:head
     [:title "zk-web"]
-    (include-css "/css/bootstrap.css")
-    (include-css "/css/bootstrap-responsive.css")
-    (include-js "/js/bootstrap.js")]
+    (include-js "/js/jquery.js")
+    (include-js "/js/bootstrap.js")
+    (include-css "/css/bootstrap.css")]
    [:body
-    [:div.container
+    [:div.container {:style "padding:0px 0px 40px 0px;"}
      (header)
      content
      (footer)]]))
 
 ;; page elements
 
+(defpartial nav-bar [path]
+  (let [[node-seq link-seq] (nodes-parents-and-link path)]
+    [:ul.breadcrumb.span12
+     (interleave (repeat [:i.icon-chevron-right])
+                 (map (fn [l n] [:li (node-link l n)]) link-seq  node-seq))]))
+
+(defpartial node-children [parent children]
+  (let [parent (if (.endsWith parent "/")
+                 parent
+                 (str parent "/"))]
+    [:div.span4
+     [:ul.nav.nav-tabs.nav-stacked
+      [:div.row
+       [:div.span3 [:h3 "Children"]]
+       [:div.span1
+        [:span.span1 (space 1)]
+        [:span.label.label-info.pull-right (count children)]]]
+
+      (if (empty? children)
+        [:div.alert "No children"]
+        (map (fn [s] [:li (node-link (str parent s) s)]) children))]]))
+
 (defpartial node-stat [stat]
-  [:div.span3
+  [:div.span4
    [:table.table-striped.table-bordered.table
     [:tr [:h3 "Node Stat"]]
     (map (fn [kv]
@@ -79,37 +118,91 @@
             [:td (last kv)]])
          stat)]])
 
-(defpartial nav-bar [path]
-  (let [[node-seq link-seq] (nodes-parents-and-link path)]
-    [:ul.breadcrumb.span9
-     (interleave (repeat [:i.icon-chevron-right])
-                 (map (fn [l n] [:li (node-link l n)]) link-seq  node-seq))]))
-
-(defpartial node-children [parent children]
-  (let [parent (if (.endsWith parent "/")
-                 parent
-                 (str parent "/"))]
-    [:div.span3
-     [:ul.nav.nav-tabs.nav-stacked
-      [:span.badge.pull-right (count children)]
-      [:h3 "Children"]
-      (if (empty? children)
-        [:div.alert "No children"]
-        (map (fn [s] [:li (node-link (str parent s) s)]) children))]]))
-
 (defpartial node-data [path data]
-  [:div.span3
-   [:span.badge.pull-right (count data) " byte(s)"]
-   [:h3 "Node Data"]
+  [:div.span4
+   [:div.row
+    [:div.span3 [:h3 "Node Data"]]
+    [:div.span1
+     [:span.span1 (space 1)]
+     [:span.label.label-info (count data) " byte(s)"]]]
+
    (if (nil? data)
      [:div.alert.alert-error "God, zookeeper returns NULL!"]
      [:div.well
       [:p {:style "word-break:break-all;"}
-       (bytes->str data)]])
-   (when-admin
-    (link-to (str "/edit?path=" path) [:button.btn.btn-danger "Edit"]))])
+       (bytes->str data)]])])
+
+(defpartial create-modal [path]
+  [:div#createModal.modal.hide.fade
+   [:div.modal-header [:h4 "Create A Child"]]
+   (form-to [:post "/create"]
+            [:div.modal-body
+             [:div.alert.alert-info [:strong "Parent: "] path]
+             [:input {:type "text" :name "name" :placeholder "Name of new node"}]
+             [:textarea.input.span7 {:name "data" :rows 6 :placeholder "Data here"}]
+             [:input.span8 {:type "hidden" :name "parent" :value path}]]
+            [:div.modal-footer
+             [:button.btn.btn-danger  "Create"]
+             (space 1)
+             [:button.btn.btn-success {:data-dismiss "modal"} "Cancel"]])
+   ])
+
+(defpartial edit-modal [path data]
+  [:div#editModal.modal.hide.fade
+   [:div.modal-header [:h4 "Edit Node Data"]]
+   (form-to [:post "/edit"]
+            [:div.modal-body
+             [:div.alert.alert-info [:strong "Path: "] path]
+             [:textarea.input.span7 {:type "text" :name "data" :rows 6} (bytes->str data)]
+             [:input.span8 {:type "hidden" :name "path" :value path}]]
+            [:div.modal-footer
+             [:button.btn.btn-danger  "Save"]
+             (space 1)
+             [:button.btn.btn-success {:data-dismiss "modal"} "Cancel"]
+             ])])
+
+(defpartial delete-modal [path children]
+  [:div#deleteModal.modal.hide.fade
+   [:div.modal-header [:h4 "Delete This Node"]]
+   (form-to [:post "/delete"]
+            [:input {:type "hidden" :name "path" :value path}]
+            (let [child-num (count children)]
+              (if (zero? child-num)
+                [:div
+                 [:div.modal-body
+                  [:div.alert.alert-warn  "Really delete?"]]
+                 [:div.modal-footer
+                  [:button.btn.btn-danger  "Delete"]
+                  [:button.btn.btn-success {:data-dismiss "modal"} "Cancel"]]]
+                [:div
+                 [:div.modal-body
+                  [:div.alert.alert-error "You can't delete a node with children."]]
+                 [:div.modal-footer
+                  [:button.btn.btn-success {:data-dismiss "modal"} "Cancel"]]]
+                )))])
+
+(defpartial rmr-modal [path data]
+  [:div#editModal.modal.hide.fade
+   [:div.modal-header "HEADER"]
+   [:div.modal-body "BODY"]
+   [:div.modal-footer "Footer"]])
 
 ;; pages
+
+(defpage "/" []
+  (let [cookie (cookies/get :history)
+        cookie (if (nil? cookie) "[]" cookie)]
+    (layout
+     (map #(link-to (str "init?addr=" %) [:div.well.span8 [:h3 %]])
+          (read-string cookie))
+     [:form.well.span8 {:action "/init" :method "get"}
+      [:div.span8
+       [:div.row
+        [:div.span6
+         [:input.span6 {:type "text" :name "addr" :placeholder "Connect String Here"}]]
+        [:div.span2
+         [:button.btn.btn-primary {:type "submit"} "Go"]]]]]
+     )))
 
 (defpage "/node" {:keys [path]}
   (let [path (normalize-path path)
@@ -117,25 +210,22 @@
     (if (nil? cli)
       (resp/redirect "/")
       (layout
-       (nav-bar path)
-       (node-children path (zk/ls cli path))
-       (node-stat (zk/stat cli path))
-       (node-data path (zk/get cli path))))))
-
-(defpage "/" []
-  (let [cookie (cookies/get :history)
-        cookie (if (nil? cookie) "[]" cookie)]
-    (layout
-     (map #(link-to (str "init?addr=" %) [:div.well.span6 [:h3 %]])
-          (read-string cookie))
-     [:form.well.span6 {:action "/init" :method "get"}
-      [:div.span6
-       [:div.row
-        [:div.span4
-         [:input.span4. {:type "text" :name "addr" :placeholder "Connect String Here"}]]
-        [:div.span2
-         [:button.btn.btn-primary {:type "submit"} "Go"]]]]]
-     )))
+       (let [children (zk/ls cli path)
+             stat (zk/stat cli path)
+             data (zk/get cli path)]
+         [:div
+          (nav-bar path)
+          [:div.row
+           (node-children path children)
+           (node-stat stat)
+           (node-data path data)]
+          (when-admin
+           [:div#adminZone
+            (admin-tool path)
+            (edit-modal path data)
+            (create-modal path)
+            (delete-modal path children)
+            ])])))))
 
 (defpage [:get "/init"] {:keys [addr]}
   (let [addr (str/trim addr)
@@ -146,7 +236,6 @@
         _ (session/put! :addr addr)
         _ (session/put! :cli (zk/mk-zk-cli addr))]
     (resp/redirect "/node")))
-
 
 (defpage [:get "/login"] {:keys [msg target]}
   (layout
@@ -175,30 +264,20 @@
     (session/put! :user nil)
     (resp/redirect (referer))))
 
-(defpage [:get "/edit"] {:keys [path]}
-  (layout
-   (let [cli (session/get :cli)
-         data (zk/get cli path)
-         data (bytes->str data)]
-     [:h3 data path]
-     [:div.row.span5.offset2
-      [:div
-       (form-to [:post "/edit"]
-                [:div.span5
-                 [:textarea.input-xlarge.span5 {:type "text" :name "data" :rows 6} data]
-                 [:input.span3 {:type "hidden" :name "path" :value path}]]
-                [:div.span5.form-actions
-                 [:button.btn.btn-danger {:type "submit"} "Save"]
-                 (space 1)
-                 [:button.btn.btn-success "Cancel"]])]])))
-
 (defpage [:post "/edit"] {:keys [path data]}
   (when-admin
    (zk/set (session/get :cli) path (.getBytes data)))
   (resp/redirect (str "/node?path=" path)))
 
-(defpage "/css" []
-  (layout
-   [:div.row
-    [:div.span6 "level 222"]
-    [:div.span6 "level 222"]]))
+(defpage [:post "/create"] {:keys [parent name data]}
+  (let [child-path (child-path parent name)
+        data (.getBytes data)
+        cli (session/get :cli)]
+    (when-admin
+     (zk/create cli child-path data)
+     (resp/redirect (str "/node?path=" child-path)))))
+
+(defpage [:post "/delete"] {:keys [path]}
+  (when-admin
+   (zk/rm (session/get :cli) path)
+   (resp/redirect (str "/node?path=" "/"))))
