@@ -30,6 +30,6 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 
 ## License
 
-Copyright (C) 2011 FIXME
+Copyright (C) 2012
 
 Distributed under the Eclipse Public License, the same as Clojure.
