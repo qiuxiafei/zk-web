@@ -18,7 +18,7 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 
 ## Configuration
 
-zk-web is also easy to configurate too. It reads $HOME/.zk-web-conf.clj when it starts up. As you already seen, the configuration file is also clojure code. Let's see a example:
+zk-web is also easy to configurate. It reads $HOME/.zk-web-conf.clj when it starts up. As you already seen, the configuration file is also clojure code. Let's see a example:
 
 ```clojure
 {
