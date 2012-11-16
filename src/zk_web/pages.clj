@@ -130,7 +130,8 @@
      [:div.alert.alert-error "God, zookeeper returns NULL!"]
      [:div.well
       [:p {:style "word-break:break-all;"}
-       (bytes->str data)]])])
+       (str/replace (bytes->str data) #"\n" "<br>")
+       ]])])
 
 (defpartial create-modal [path]
   [:div#createModal.modal.hide.fade
