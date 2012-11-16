@@ -21,12 +21,10 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 * List children of a node with link to them.
 * Show stat and data of a node.
 * Remember last 3 zookeepers you visit in cookie.
+* User can create new node, edit a node and delete a node AFTER logged in.
 
 ## TODO
-* User Access Control - Let administrator add/delete/edit nodes, and guest has read-only permission.
 * Data Format - Format json, xml and so on.
-* Make it more configarable.
-* Ability to access several zk server in one http session
 
 ## License
 

@@ -66,7 +66,7 @@
        [[:li [:a {:data-toggle "modal" :href "#createModal"} "Create"]]
         [:li [:a {:data-toggle "modal" :href "#editModal"} "Edit"]]
         [:li [:a {:data-toggle "modal" :href "#deleteModal"} "Delete"]]
-        [:li (link-to (str "/rmr?path=" path)  "RMR")]]
+        [:li [:a {:data-toggle "modal" :href "#rmrModal"} "RMR"]]]
        (repeat [:li.divider-vertical])
        )]]
     ]])
@@ -137,9 +137,9 @@
    [:div.modal-header [:h4 "Create A Child"]]
    (form-to [:post "/create"]
             [:div.modal-body
-             [:div.alert.alert-info [:strong "Parent: "] path]
+             [:div.alert.alert-info  "Create a child under: " [:strong path]]
              [:input {:type "text" :name "name" :placeholder "Name of new node"}]
-             [:textarea.input.span7 {:name "data" :rows 6 :placeholder "Data here"}]
+             [:textarea.input.span7 {:name "data" :rows 6 :placeholder "Data of new node"}]
              [:input.span8 {:type "hidden" :name "parent" :value path}]]
             [:div.modal-footer
              [:button.btn.btn-danger  "Create"]
@@ -152,7 +152,7 @@
    [:div.modal-header [:h4 "Edit Node Data"]]
    (form-to [:post "/edit"]
             [:div.modal-body
-             [:div.alert.alert-info [:strong "Path: "] path]
+             [:div.alert.alert-info "Editing node: " [:strong path]]
              [:textarea.input.span7 {:type "text" :name "data" :rows 6} (bytes->str data)]
              [:input.span8 {:type "hidden" :name "path" :value path}]]
             [:div.modal-footer
@@ -170,7 +170,7 @@
               (if (zero? child-num)
                 [:div
                  [:div.modal-body
-                  [:div.alert.alert-warn  "Really delete?"]]
+                  [:div.alert.alert-warn  "Confirm to delete node: " [:strong path]]]
                  [:div.modal-footer
                   [:button.btn.btn-danger  "Delete"]
                   [:button.btn.btn-success {:data-dismiss "modal"} "Cancel"]]]
@@ -181,11 +181,18 @@
                   [:button.btn.btn-success {:data-dismiss "modal"} "Cancel"]]]
                 )))])
 
-(defpartial rmr-modal [path data]
-  [:div#editModal.modal.hide.fade
-   [:div.modal-header "HEADER"]
-   [:div.modal-body "BODY"]
-   [:div.modal-footer "Footer"]])
+(defpartial rmr-modal [path]
+  [:div#rmrModal.modal.hide.fade
+   [:div.modal-header [:h4 "Delete This Node And It's Children"]]
+   (form-to [:post "/rmr"]
+            [:input {:type "hidden" :name "path" :value path}]
+            [:div.modal-body
+             [:div.alert.alert-error [:h4 "Danger!!"] "RMR will delete " [:strong path] " and all it's children!"]]
+            [:div.modal-footer
+             [:button.btn.btn-danger "I will perform RMR"]
+             (space 1)
+             [:button.btn.btn-success {:data-dismiss "modal"} "Cancel"]])
+   ])
 
 ;; pages
 
@@ -193,13 +200,13 @@
   (let [cookie (cookies/get :history)
         cookie (if (nil? cookie) "[]" cookie)]
     (layout
-     (map #(link-to (str "init?addr=" %) [:div.well.span8 [:h3 %]])
+     (map #(link-to (str "init?addr=" %) [:div.well.span8 [:h4 %]])
           (read-string cookie))
      [:form.well.span8 {:action "/init" :method "get"}
       [:div.span8
        [:div.row
         [:div.span6
-         [:input.span6 {:type "text" :name "addr" :placeholder "Connect String Here"}]]
+         [:input.span6 {:type "text" :name "addr" :placeholder "Connect String: host[:port][/namespace]"}]]
         [:div.span2
          [:button.btn.btn-primary {:type "submit"} "Go"]]]]]
      )))
@@ -225,6 +232,7 @@
             (edit-modal path data)
             (create-modal path)
             (delete-modal path children)
+            (rmr-modal path)
             ])])))))
 
 (defpage [:get "/init"] {:keys [addr]}
@@ -280,4 +288,9 @@
 (defpage [:post "/delete"] {:keys [path]}
   (when-admin
    (zk/rm (session/get :cli) path)
-   (resp/redirect (str "/node?path=" "/"))))
+   (resp/redirect (str "/node?path=" (parent path)))))
+
+(defpage [:post "/rmr"]  {:keys [path]}
+  (when-admin
+   (zk/rmr (session/get :cli) path)
+   (resp/redirect (str "/node?path=" (parent path)))))

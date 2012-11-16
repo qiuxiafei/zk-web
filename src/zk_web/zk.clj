@@ -1,7 +1,8 @@
 (ns zk-web.zk
   (:import [com.netflix.curator.retry RetryNTimes]
            [com.netflix.curator.framework CuratorFramework CuratorFrameworkFactory])
-  (:refer-clojure :exclude [set get]))
+  (:refer-clojure :exclude [set get])
+  (:use zk-web.util))
 
 (defn- mk-zk-cli-inner
   "Create a zk client using addr as connecting string"
@@ -53,3 +54,11 @@
   "Get data from a node"
   [cli path]
   (-> cli (.getData) (.forPath path)))
+
+(defn rmr
+  "Remove recursively"
+  [cli path]
+  (println "rmr " path)
+  (doseq [child (ls cli path)]
+    (rmr cli (child-path path child)))
+  (rm cli path))
