@@ -74,7 +74,7 @@
 (defpartial layout [& content]
   (html5
    [:head
-    [:title "zk-web"]
+    [:title "ZK-Web | Make zookeeper simpler"]
     (include-js "/js/jquery.js")
     (include-js "/js/bootstrap.js")
     (include-css "/css/bootstrap.css")]
