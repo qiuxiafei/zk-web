@@ -130,8 +130,7 @@
      [:div.alert.alert-error "God, zookeeper returns NULL!"]
      [:div.well
       [:p {:style "word-break:break-all;"}
-       (str/replace (bytes->str data) #"\n" "<br>")
-       ]])])
+       (str/replace (bytes->str data) #"\n" "<br>")]])])
 
 (defpartial create-modal [path]
   [:div#createModal.modal.hide.fade
@@ -241,9 +240,10 @@
         cookie-str (cookies/get :history)
         cookie-str (if (nil? cookie-str) "[]" cookie-str)
         cookie (read-string cookie-str)
+        cookie (filter #(not= addr %) cookie)
+        _ (session/put! :cli (zk/mk-zk-cli addr))
         _ (cookies/put! :history  (str (vec (take 3 (cons addr cookie)))))
-        _ (session/put! :addr addr)
-        _ (session/put! :cli (zk/mk-zk-cli addr))]
+        _ (session/put! :addr addr)]
     (resp/redirect "/node")))
 
 (defpage [:get "/login"] {:keys [msg target]}

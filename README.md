@@ -8,7 +8,7 @@ zk-web is written in [clojure](http://clojure.org) with [noir](http://webnoir.or
 To use zk-web, you need [leiningen](https://github.com/technomancy/leiningen) and git currentlly. (And I'll make a stand-alone package later).
 Run the following command:
 
-```bash
+```
 git clone git://github.com/qiuxiafei/zk-web.git
 cd zk-web
 lein deps # run this if you're using lein 1.x
@@ -20,10 +20,10 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 
 zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` when it starts up. As you‘ve already seen, the configuration file is also clojure code. Let's see an example:
 
-```clojure
+```
 {
  :server-port 8989
- :users {
+ :users {  
          "admin" "hello"
          ;; map of user -> password
          ;; you can add more
