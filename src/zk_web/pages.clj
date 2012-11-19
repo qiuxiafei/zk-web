@@ -33,7 +33,19 @@
         referer (header "referer")]
     referer))
 
-(def all-users (:users (conf/load-conf)))
+(defn init-zk-client [addr]
+  (let [addr (str/trim addr)
+        cookie-str (cookies/get :history)
+        cookie-str (if (nil? cookie-str) "[]" cookie-str)
+        cookie (read-string cookie-str)
+        cookie (filter #(not= addr %) cookie)]
+    (session/put! :cli (zk/mk-zk-cli addr))
+    (cookies/put! :history  (str (vec (take 3 (cons addr cookie)))))
+    (session/put! :addr addr)))
+
+(defonce conf (conf/load-conf))
+(defonce all-users (:users conf))
+(defonce default-node (:default-node conf))
 
 ;; layout
 
@@ -197,6 +209,8 @@
 ;; pages
 
 (defpage "/" []
+  (when (and  (nil? (cookies/get :history)) (not-empty default-node))
+    (init-zk-client default-node))
   (let [cookie (cookies/get :history)
         cookie (if (nil? cookie) "[]" cookie)]
     (layout
@@ -236,15 +250,8 @@
             ])])))))
 
 (defpage [:get "/init"] {:keys [addr]}
-  (let [addr (str/trim addr)
-        cookie-str (cookies/get :history)
-        cookie-str (if (nil? cookie-str) "[]" cookie-str)
-        cookie (read-string cookie-str)
-        cookie (filter #(not= addr %) cookie)
-        _ (session/put! :cli (zk/mk-zk-cli addr))
-        _ (cookies/put! :history  (str (vec (take 3 (cons addr cookie)))))
-        _ (session/put! :addr addr)]
-    (resp/redirect "/node")))
+  (init-zk-client addr)
+  (resp/redirect "/node"))
 
 (defpage [:get "/login"] {:keys [msg target]}
   (layout
