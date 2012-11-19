@@ -18,16 +18,17 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 
 ## Configuration
 
-zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` when it starts up. As you‘ve already seen, the configuration file is also clojure code. Let's see an example:
+zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/zk-web-conf.clj` when it starts up. As you‘ve already seen, the configuration file is also clojure code. Let's see an example:
 
 ```clojure
 {
- :server-port 8989
+ :server-port 8989  ;; optional, 8080 by default
  :users {
          "admin" "hello"
          ;; map of user -> password
          ;; you can add more
          }
+ :default-node "localhost:2181/my-start-node" ;; optional
  }
 ```
 
