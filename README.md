@@ -39,6 +39,7 @@ zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/z
 * Remember last 3 zookeepers you visit in cookie.
 * Create/edit/delete/rmr a node.
 * Simple authority management.
+* Default node for first-arrival guest.
 
 ## TODO
 * Data Format - Format json, xml and so on.
