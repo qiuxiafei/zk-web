@@ -5,7 +5,9 @@
 (defn bytes->str
   "Convert byte[] to String"
   [bytes]
-  (String. bytes (Charset/forName "UTF-8")))
+  (if bytes
+    (String. bytes (Charset/forName "UTF-8"))
+    ""))
 
 (defn normalize-path
   "fix the path to normalized form"
