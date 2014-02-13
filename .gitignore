@@ -1,0 +1,3 @@
+# Ignoring files generated when runnin zk-web locally
+/.lein-deps-sum
+/lib
