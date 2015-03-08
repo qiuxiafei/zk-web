@@ -48,3 +48,6 @@
    (= path "/") "/"
    :default (let [path (if (.endsWith path "/") (drop-last path) path)]
               (apply str (drop-last-while #(not= % \/) path)))))
+
+(defn str->int [string]
+  (Integer. (re-find  #"\d+" string )))
