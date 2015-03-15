@@ -50,4 +50,5 @@
               (apply str (drop-last-while #(not= % \/) path)))))
 
 (defn str->int [string]
-  (Integer. (re-find  #"\d+" string )))
+  (if string
+    (Integer. (re-find  #"\d+" string ))))
