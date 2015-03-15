@@ -1,3 +1,7 @@
 # Ignoring files generated when runnin zk-web locally
 /.lein-deps-sum
 /lib
+.idea
+.lein-repl-history
+target/
+*.iml
