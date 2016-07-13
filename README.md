@@ -16,6 +16,13 @@ lein run
 ```
 Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it's super easy!
 
+## Package UberJar
+
+```bash
+cd zk-web
+lein uberjar
+```
+
 ## Configuration
 
 zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/zk-web-conf.clj` when it starts up. As you‘ve already seen, the configuration file is also clojure code. Let's see an example:
