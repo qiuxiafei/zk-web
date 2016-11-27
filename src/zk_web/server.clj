@@ -9,6 +9,8 @@
 
 (defn -main [& m]
   (let [mode (keyword (or (first m) :dev))
-        port (:server-port (conf/load-conf))]
+        port (:server-port (conf/load-conf))
+        base-url (:base-url (conf/load-conf))]
     (server/start port {:mode mode
-                        :ns 'zk-web})))
+                        :ns 'zk-web
+                        :base-url base-url})))
