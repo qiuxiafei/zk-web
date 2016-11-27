@@ -36,6 +36,7 @@ zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/z
          ;; you can add more
          }
  :default-node "localhost:2181/my-start-node" ;; optional
+ :base-url "/prefix" ;; optional
  }
 ```
 
@@ -55,6 +56,7 @@ zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/z
 * @lra 
 * @lispmind 
 * @killme2008 
+* @thorhs
 
 
 ## License
