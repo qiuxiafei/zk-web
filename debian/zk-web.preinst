@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+
+username="zk-web"
+home=/usr/lib/${username}
+
+# /usr/sbin/adduser --system --home=${home} --gecos=${username}  --disabled-password --shell=/bin/bash --group ${username}
+# if there is no ${username} - create one.
+
+if ! getent passwd ${username} > /dev/null; then
+  echo "Creating ${username} user account and group"
+  addgroup --quiet ${username}
+  adduser --system --quiet --home ${home} --no-create-home \
+    --shell /bin/bash --ingroup ${username} ${username}
+fi
+
+echo "Making sure ${username} user is unlocked"
+if [ -f /etc/shadow ]; then
+  usermod -U -e '' ${username}
+else
+  usermod -U ${username}
+fi
+#DEBHELPER#
+[ "$1" = "configure" ] && ldconfig
+exit 0
