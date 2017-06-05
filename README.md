@@ -1,4 +1,5 @@
 # zk-web
+[![CircleCI](https://circleci.com/gh/noteax/zk-web.svg?style=svg)](https://circleci.com/gh/noteax/zk-web)
 
 zk-web is a Web UI of [Zookeeper](http://zookeeper.apache.org), just making it easier to use. Sometimes I really get tired of the command line.
 zk-web is written in [clojure](http://clojure.org) with [noir](http://webnoir.org) and [boostrap](http://twitter.github.com/bootstrap/). Currently there're just less than 450 lines clojure code at all. Clojure is really so simple and so elegent!
