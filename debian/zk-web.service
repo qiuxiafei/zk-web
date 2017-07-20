@@ -8,3 +8,6 @@ ExecStart=/usr/bin/java -jar /usr/lib/zk-web/zk-web-standalone.jar
 User=zk-web
 Restart=always
 PIDFile=/var/run/zk-web.pid
+
+[Install]
+WantedBy=multi-user.target
