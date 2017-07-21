@@ -22,6 +22,24 @@ Meet with zk-web at [http://localhost:8080](http://localhost:8080)! I'am sure it
 cd zk-web
 lein uberjar
 ```
+## Create debian package
+
+```bash
+docker build -t zk-web .
+docker run -it --rm -v $(pwd):/usr/src/app zk-web /bin/bash /usr/src/app/build-pkg-with-fpm.sh
+```
+Install and run it with following commands:
+
+```bash
+sudo dpkg -i zk-web_0.1.0-SNAPSHOT_all.deb
+sudo systemctl start zk-web
+```
+
+Enable the zk-web service in order for it to be autorestart on host reboot:
+
+```bash
+sudo systemctl enable zk-web
+```
 
 ## Configuration
 

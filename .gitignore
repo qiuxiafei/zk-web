@@ -5,3 +5,5 @@
 .lein-repl-history
 target/
 *.iml
+tmp/
+*.deb

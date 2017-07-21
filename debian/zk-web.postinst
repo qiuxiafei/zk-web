@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+username=zk-web
+
+# TODO: Find out how this can be done the right way (maybe fpm command line parameters?)
+# Set permissions on directories
+/bin/chown -R ${username}:${username} /usr/lib/zk-web
+
+#DEBHELPER#
+[ "$1" = "configure" ] && ldconfig
+exit 0
