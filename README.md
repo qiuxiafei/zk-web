@@ -73,7 +73,7 @@ zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/z
 * @lra 
 * @lispmind 
 * @killme2008 
-
+* @pershyn
 
 ## License
 
