@@ -1,6 +1,8 @@
 (ns zk-web.zk
   (:import [com.netflix.curator.retry RetryNTimes]
            [com.netflix.curator.framework CuratorFramework CuratorFrameworkFactory])
+  (:require [clj-time.format :as time-format]
+            [clj-time.coerce :as time-coerce])
   (:refer-clojure :exclude [set get])
   (:use zk-web.util))
 
@@ -43,7 +45,17 @@
 (defn stat
   "Get stat of a node, return nil if no such node"
   [cli path]
-  (-> cli (.checkExists) (.forPath path) bean (dissoc :class)))
+  (letfn [(pretty-time [t]
+            (let [date-time (time-coerce/from-long t)]
+              (time-format/unparse (time-format/formatters :date-hour-minute-second) date-time)))]
+    (let [node-data (-> cli (.checkExists) (.forPath path) bean)
+          ctime-pretty (pretty-time (clojure.core/get node-data :ctime 0))
+          mtime-pretty (pretty-time (clojure.core/get node-data :mtime 0))
+          modified-node-data (assoc
+                               (dissoc node-data :class)
+                               :ctime-pretty ctime-pretty
+                               :mtime-pretty mtime-pretty)]
+      (sort-by first (seq modified-node-data)))))
 
 (defn set
   "Set data to a node"
