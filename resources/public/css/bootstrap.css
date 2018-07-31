@@ -228,6 +228,23 @@ a:hover {
   width: 940px;
 }
 
+.float-right {
+  float: right;
+  align-content: right;
+}
+
+
+.float-left {
+  float: left;
+  align-content: left;
+}
+
+.clipboard-input {
+  display: none; 
+  position: relative; 
+  left: -10000px;
+}
+
 .span12 {
   width: 940px;
 }
