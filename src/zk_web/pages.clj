@@ -231,7 +231,7 @@
     (if (nil? cli)
       (resp/redirect "/")
       (layout
-       (let [children (zk/ls cli path)
+       (let [children (sort (zk/ls cli path))
              stat (zk/stat cli path)
              data (zk/get cli path)]
          [:div
