@@ -7,3 +7,4 @@ target/
 *.iml
 tmp/
 *.deb
+pom.xml

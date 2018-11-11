@@ -6,6 +6,7 @@
             [noir.response :as resp]
             [noir.request :as req]
             [clojure.string :as str])
+  (:import (java.net URLEncoder))
   (:use [noir.core]
         [zk-web.util]
         [hiccup page form element core]))
@@ -15,7 +16,7 @@
 (defn node-link
   "Return http link to node page"
   [node text]
-  [:a {:href (str "/node?path=" node)} text])
+  [:a {:href (str "/node?path=" (string->urlencoded node))} text])
 
 (defn nodes-parents-and-link
   "Return name parents and there links"

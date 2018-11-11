@@ -1,6 +1,7 @@
 (ns zk-web.util
   (:require [noir.session :as session])
-  (:import [java.nio.charset Charset]))
+  (:import [java.nio.charset Charset]
+           [java.net URLEncoder]))
 
 (defn bytes->str
   "Convert byte[] to String"
@@ -8,6 +9,11 @@
   (if bytes
     (String. bytes (Charset/forName "UTF-8"))
     ""))
+
+(defn string->urlencoded
+  "Convert string to a valid URL string."
+  [string]
+  (URLEncoder/encode string "UTF-8"))
 
 (defn normalize-path
   "fix the path to normalized form"
