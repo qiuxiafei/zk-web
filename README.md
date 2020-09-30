@@ -1,11 +1,11 @@
-# zk-web
+# ZK-WEB
 
-zk-web is a Web UI of [Zookeeper](http://zookeeper.apache.org), just making it easier to use. Sometimes I really get tired of the command line.
-zk-web is written in [clojure](http://clojure.org) with [noir](http://webnoir.org) and [boostrap](http://twitter.github.com/bootstrap/). Currently there're just less than 450 lines clojure code at all. Clojure is really so simple and so elegent!
+ZK-WEB is a Web UI of [Zookeeper](http://zookeeper.apache.org), just making it easier to use. Sometimes I really get tired of the command line.
+It is written in [clojure](http://clojure.org) with [noir](http://webnoir.org) and [boostrap](http://twitter.github.com/bootstrap/). Currently there are just less than 450 lines clojure code at all. Clojure is really so simple and so elegent!
 
-## Usage
+## How to use ?
 
-To use zk-web, you need [leiningen](https://github.com/technomancy/leiningen) and git currentlly. (And I'll make a stand-alone package later).
+To use ZK-WEB , you need [leiningen](https://github.com/technomancy/leiningen) and git currently. (And I'll make a stand-alone package later).
 Run the following command:
 
 ```bash
@@ -41,9 +41,9 @@ Enable the zk-web service in order for it to be autorestart on host reboot:
 sudo systemctl enable zk-web
 ```
 
-## Configuration
+## Configuration Process
 
-zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/zk-web-conf.clj` when it starts up. As you‘ve already seen, the configuration file is also clojure code. Let's see an example:
+zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/zk-web-conf.clj` when it starts up. As you've already seen, the configuration file is also clojure code. Let's see an example:
 
 ```clojure
 {
@@ -57,7 +57,7 @@ zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/z
  }
 ```
 
-## Features
+## Salient Features
 * Jump to ancesters of a node in navigation bar.
 * List children of a node with link to them.
 * Show stat and data of a node.
@@ -66,7 +66,7 @@ zk-web is also easy to configurate. It reads `$HOME/.zk-web-conf.clj` or `conf/z
 * Simple authority management.
 * Default node for first-arrival guest.
 
-## TODO
+## TO DO
 * Data Format - Format json, xml and so on.
 
 ## Contributers
