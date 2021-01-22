@@ -1,6 +1,7 @@
 (ns zk-web.conf
   (:require [clojure.java.io :as io]
-            [zk-web.util :as u])
+            [zk-web.util :as u]
+            [clojure.string :as s])
   (:import [java.io File PushbackReader]))
 
 (defn- valid-conf-file?
@@ -29,7 +30,7 @@
         (if env-port
           (assoc conf :server-port env-port)
           conf)
-        (if env-node
+        (if (not (s/blank? env-node))
           (assoc conf :default-node env-node)
           conf)))
 
